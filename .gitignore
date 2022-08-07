@@ -1,0 +1,9 @@
+env/
+
+__pycache__/
+
+.github/
+
+error.log
+
+CODEOWNERS
