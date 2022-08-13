@@ -119,7 +119,7 @@ def venues():
     for venue in venues:
         upcoming_shows = []
         if len(venue.shows):
-          for show in shows:
+          for show in venue.shows:
             if show.start_time > datetime.now():
               upcoming_shows.append(show)
         location_data.append({"id": venue.id, "name": venue.name, "num_upcoming_shows": len(upcoming_shows)})
@@ -202,10 +202,11 @@ def show_venue(venue_id):
 
     if len(venue.shows):
       for show in venue.shows:
+        artist = Artist.query.get(show.artist_id)
         if show.start_time > datetime.now():
-          venue_data['upcoming_shows'].append(show)
+          venue_data['upcoming_shows'].append({**show.__dict__, "start_time": str(show.start_time),  'artist_name': artist.name, "artist_image_link": artist.image_link})
         else:
-          venue_data['past_shows'].append(show)
+          venue_data['past_shows'].append({**show.__dict__, "start_time": str(show.start_time), 'artist_name': artist.name, "artist_image_link": artist.image_link})
 
     venue_data["past_shows_count"] = len(venue_data["past_shows"])
     venue_data["upcoming_shows_count"] = len(venue_data["upcoming_shows"])
@@ -429,10 +430,11 @@ def show_artist(artist_id):
 
     if len(artist.shows):
       for show in artist.shows:
+        venue = Venue.query.get(show.venue_id)
         if show.start_time > datetime.now():
-          data['upcoming_shows'].append(show)
+          data['upcoming_shows'].append({**show.__dict__, "start_time": str(show.start_time),  'venue_name': venue.name, "venue_image_link": venue.image_link})
         else:
-          data['past_shows'].append(show)
+          data['past_shows'].append({**show.__dict__, "start_time": str(show.start_time),  'venue_name': venue.name, "venue_image_link": venue.image_link})
     
     data['past_shows_count'] = len(data["past_shows"])
     data['upcoming_shows_count'] = len(data["upcoming_shows"])
@@ -658,7 +660,21 @@ def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
   try:
-    data = db.session.query(Show).join(Artist, Venue).all()
+    data = []
+    shows = db.session.query(Show).join(Artist.shows, Venue).all()
+
+
+    for item in shows:
+      artist = Artist.query.get(item.artist_id)
+      venue = Venue.query.get(item.venue_id)
+      data.append({
+        "venue_id": venue.id,
+        "venue_name": venue.name,
+        "artist_id": artist.id,
+        "artist_name": artist.name,
+        "artist_image_link": artist.image_link,
+        "start_time": str(item.start_time)
+      })
 
   except Exception as error:
     print(error)
