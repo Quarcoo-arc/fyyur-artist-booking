@@ -132,20 +132,64 @@ def search_venues():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
+  try:
+    search_term=request.form.get('search_term')
+    
+    data = []
+    venues = Venue.query.filter(Venue.name.ilike(f"%{search_term}%")).all()
+    print(venues)
+
+    for venue in venues:
+      upcoming_shows = []
+      if len(venue.shows):
+        for show in shows:
+          if show.start_time > datetime.now():
+            upcoming_shows.append(show)
+      data.append({"id": venue.id, "name": venue.name, "num_upcoming_shows": len(upcoming_shows)})
+
+    response = {
+      "count": len(venues),
+      "data": data,
+    }
+
+    print(response)
+
+  except Exception as error:
+    print(error)
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
+  # TODO: replace with real venue data from the venues table, using venue_id - Completed
+  try: 
+    venue = Venue.query.get(venue_id)
+
+    venue_data = {**venue.__dict__}
+    venue_data['genres'] = venue_data['genres'].split(";") if venue_data.get('genres') else []
+
+    venue_data['past_shows'] = []
+    venue_data['upcoming_shows'] = []
+
+    if len(venue.shows):
+      for show in shows:
+        if show.start_time > datetime.now():
+          venue_data['upcoming_shows'].append(show)
+        else:
+          venue_data['past_shows'].append(show)
+
+    venue_data["past_shows_count"] = len(venue_data["past_shows"])
+    venue_data["upcoming_shows_count"] = len(venue_data["upcoming_shows"])
+  except Exception as error:
+    print(error)  
   data1={
     "id": 1,
     "name": "The Musical Hop",
@@ -223,8 +267,8 @@ def show_venue(venue_id):
     "past_shows_count": 1,
     "upcoming_shows_count": 1,
   }
-  data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
-  return render_template('pages/show_venue.html', venue=data)
+  # data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
+  return render_template('pages/show_venue.html', venue=venue_data)
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -257,7 +301,7 @@ def create_venue_submission():
 
   except Exception as error:
     db.session.rollback()
-    # TODO: on unsuccessful db insert, flash an error instead.
+    # TODO: on unsuccessful db insert, flash an error instead. - Completed
     flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
     print(error)
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
@@ -268,7 +312,7 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
+  # TODO: Complete this endpoint for taking a venue_id, and using  - Completed
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
   venue = Venue.query.get(venue_id)
   venue_name = venue.name
@@ -282,7 +326,7 @@ def delete_venue(venue_id):
     db.session.rollback()
     flash('An error occurred. Venue ' + venue_name + ' was not deleted.')
     print(error)
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
+  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that TODO
   # clicking that button delete it from the db then redirect the user to the homepage
   return render_template('pages/home.html')
 
@@ -443,7 +487,7 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
+  # TODO: take values from the form submitted, and update existing - Completed
   # venue record with ID <venue_id> using the new attributes
   try: 
     form_data = {**request.form}
