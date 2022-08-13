@@ -64,7 +64,7 @@ class Artist(db.Model):
     website = db.Column(db.String(170))
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(200))
-    shows = db.relationship("Show", backref="venue", lazy=True)
+    shows = db.relationship("Show", backref="artist", lazy=True)
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 class Show(db.Model):
@@ -236,13 +236,33 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  # TODO: insert form data as a new Venue record in the db, instead - Completed
+  # TODO: modify data to be the data object returned from db insertion - Completed
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+  form_data = {**request.form}
+  form_data['genres'] = " ".join(request.form.getlist('genres'))
+  form_data['seeking_talent'] = True if form_data.get('seeking_talent') == "y" else False
+  form_data['website'] = form_data['website_link']
+  del form_data['website_link']
+
+  venue = Venue(**form_data)
+
+  print(form_data)
+
+  try:
+    db.session.add(venue)
+    db.session.commit()
+    # on successful db insert, flash success
+    flash('Venue ' + request.form['name'] + ' was successfully listed!')
+
+  except Exception as error:
+    db.session.rollback()
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+    print(error)
+    # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+
+  db.session.close()
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
@@ -250,7 +270,7 @@ def create_venue_submission():
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
+  
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
   return None
