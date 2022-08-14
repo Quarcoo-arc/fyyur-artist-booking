@@ -240,7 +240,11 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead - Completed
   # TODO: modify data to be the data object returned from db insertion - Completed
-
+  form = VenueForm(request.form)
+  if not form.validate():
+    for error in form.errors:
+      flash(f"{error} - {form.errors[error][0]}")
+    return render_template('forms/new_venue.html', form=form)
   form_data = {**request.form}
   form_data['genres'] = ";".join(request.form.getlist('genres'))
   form_data['seeking_talent'] = True if form_data.get('seeking_talent') == "y" else False
@@ -565,6 +569,11 @@ def create_artist_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
   try:
+    form = ArtistForm(request.form)
+    if not form.validate():
+      for error in form.errors:
+        flash(f"{error} - {form.errors[error][0]}")
+      return render_template('forms/new_artist.html', form=form)
     data = {**request.form}
     data['genres'] = ";".join(request.form.getlist('genres'))
     data['seeking_venue'] = True if data.get('seeking_venue') == "y" else False
@@ -665,6 +674,11 @@ def create_show_submission():
   # TODO: insert form data as a new Show record in the db, instead
 
   try:
+    form = ShowForm(request.form)
+    if not form.validate():
+      for error in form.errors:
+        flash(f"{error} - {form.errors[error][0]}")
+      return render_template('forms/new_show.html', form=form)
 
     data = {**request.form}
 

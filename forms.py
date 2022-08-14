@@ -1,6 +1,7 @@
 from datetime import datetime
+import re
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, AnyOf, URL
 
 class ShowForm(Form):
@@ -126,6 +127,12 @@ class VenueForm(Form):
         'seeking_description'
     )
 
+    def validate_phone(form, field):
+        if  not len(field.data) == 12:
+            raise ValidationError('Invalid phone number.')
+        if not re.search("^[0-9]{3}[-][0-9]{3}[-][0-9]{4}$", field.data):
+            raise ValidationError('Invalid phone number.')
+
 
 
 class ArtistForm(Form):
@@ -236,4 +243,11 @@ class ArtistForm(Form):
     seeking_description = StringField(
             'seeking_description'
      )
+
+    def validate_phone(form, field):
+        if  not len(field.data) == 12:
+            raise ValidationError('Invalid phone number.')
+        if not re.search("^[0-9]{3}[-][0-9]{3}[-][0-9]{4}$", field.data):
+            raise ValidationError('Invalid phone number.')
+
 
