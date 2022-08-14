@@ -1,4 +1,20 @@
-from app import db
+from flask import Flask
+from flask_moment import Moment
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+
+
+#----------------------------------------------------------------------------#
+# App Config.
+#----------------------------------------------------------------------------#
+
+app = Flask(__name__)
+moment = Moment(app)
+app.config.from_object('config')
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 
 
 #----------------------------------------------------------------------------#
@@ -49,6 +65,6 @@ class Show(db.Model):
   __tablename__ = "Show"
 
   id = db.Column(db.Integer, primary_key=True)
-  artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id"), nullable=False)
-  venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"), nullable=False)
+  artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id", ondelete='cascade'), nullable=False)
+  venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id", ondelete='cascade'), nullable=False)
   start_time = db.Column(db.DateTime, nullable=False)

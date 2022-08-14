@@ -3,25 +3,12 @@
 #----------------------------------------------------------------------------#
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, flash, redirect, url_for
-from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask import render_template, request, flash, redirect, url_for
 import logging
 from logging import Formatter, FileHandler
 from models import *
 from forms import *
 
-
-#----------------------------------------------------------------------------#
-# App Config.
-#----------------------------------------------------------------------------#
-
-app = Flask(__name__)
-moment = Moment(app)
-app.config.from_object('config')
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -288,8 +275,9 @@ def delete_venue(venue_id):
   venue_name = venue.name
 
   try:
-    db.session.delete(venue)
+    deleted_rows = Venue.query.filter_by(id=venue_id).delete()
     db.session.commit()
+    print("Deleted rows", deleted_rows)
     flash('Venue ' + venue_name + ' was successfully deleted!')
   
   except Exception as error:
